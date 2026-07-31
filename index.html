@@ -698,19 +698,111 @@
     let sidebarOpen = false;
     let deferredPrompt = null;
 
-    // ====== STORAGE ======
-    function saveData() { localStorage.setItem('miaocailiao_v3', JSON.stringify(materials)); }
-    function loadData() {
-      try {
-        // Try v3 first, fallback to old keys
-        let d = localStorage.getItem('miaocailiao_v3');
-        if (!d) d = localStorage.getItem('miaocailiao_materials');
-        if (d) materials = JSON.parse(d);
-      } catch(e) { materials = []; }
+    // ====== STORAGE (IndexedDB — supports 2000+ entries) ======
+    const DB_NAME = 'miaocailiao_db', DB_VER = 2;
+    let dbReady = false, db = null;
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        if (dbReady && db) return resolve(db);
+        const r = indexedDB.open(DB_NAME, DB_VER);
+        r.onupgradeneeded = (e) => {
+          const d = e.target.result;
+          if (!d.objectStoreNames.contains('materials')) d.createObjectStore('materials', { keyPath: 'key' });
+          if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'key' });
+        };
+        r.onsuccess = (e) => { db = e.target.result; dbReady = true; resolve(db); };
+        r.onerror = (e) => reject(e.target.error);
+        r.onblocked = () => {
+          // Old connection blocking upgrade — close and retry
+          if (db) { db.close(); db = null; dbReady = false; }
+          const retry = indexedDB.open(DB_NAME, DB_VER);
+          retry.onupgradeneeded = r.onupgradeneeded;
+          retry.onsuccess = r.onsuccess;
+          retry.onerror = r.onerror;
+        };
+      });
     }
 
+    async function saveData() {
+      // Step 1: Always try localStorage first (reliable, synchronous)
+      let lsOk = false;
+      try {
+        const json = JSON.stringify(materials);
+        localStorage.setItem('miaocailiao_v3', json);
+        lsOk = true;
+      } catch(e) { /* localStorage full, fall through to IndexedDB */ }
+
+      // Step 2: Also save to IndexedDB if available
+      try {
+        if (!dbReady || !db) await openDB();
+        return new Promise((resolve) => {
+          const timeout = setTimeout(() => { resolve(lsOk); }, 5000);
+          try {
+            const tx = db.transaction('materials', 'readwrite');
+            const store = tx.objectStore('materials');
+            const req = store.put({ key: 'data', value: materials, updatedAt: Date.now() });
+            req.onsuccess = () => { clearTimeout(timeout); resolve(true); };
+            req.onerror = () => { clearTimeout(timeout); resolve(lsOk); };
+            tx.onerror = () => { clearTimeout(timeout); resolve(lsOk); };
+          } catch(e) {
+            clearTimeout(timeout);
+            resolve(lsOk);
+          }
+        });
+      } catch(e) {
+        // IndexedDB totally broken, return localStorage result
+        if (!lsOk) showToast('存储空间不足，请导出备份后清理部分数据');
+        return lsOk;
+      }
+    }
+
+    async function loadData() {
+      // Try IndexedDB first
+      let loaded = false;
+      try {
+        await openDB();
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction('materials', 'readonly');
+            const r = tx.objectStore('materials').get('data');
+            r.onsuccess = () => { if (r.result && r.result.value && r.result.value.length > 0) { materials = r.result.value; loaded = true; } resolve(); };
+            r.onerror = () => { resolve(); };
+          } catch(e) { resolve(); }
+        });
+      } catch(e) { /* IndexedDB unavailable */ }
+
+      // Fallback: try localStorage
+      if (!loaded) {
+        try {
+          const d = localStorage.getItem('miaocailiao_v3');
+          if (d) { materials = JSON.parse(d); loaded = true; }
+        } catch(e) {}
+      }
+      if (!loaded) {
+        try {
+          const d = localStorage.getItem('miaocailiao_materials');
+          if (d) { materials = JSON.parse(d); loaded = true; }
+        } catch(e) {}
+      }
+    }
+
+    async function getStorageInfo() {
+      try {
+        await openDB();
+        const json = JSON.stringify(materials);
+        const textSize = new Blob([json]).size;
+        let imgSize = 0;
+        materials.forEach(m => { if (m.image) imgSize += m.image.length * 0.75; }); // base64 → bytes estimate
+        let quota = '未知';
+        try { const e = await navigator.storage?.estimate(); if (e) quota = formatBytes(e.quota); } catch(_) {}
+        return { textSize, imgSize, total: textSize + imgSize, quota };
+      } catch(e) { return { textSize: 0, imgSize: 0, total: 0, quota: '未知' }; }
+    }
+    function formatBytes(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(1) + ' GB'; }
+
     // Migration: rename old 国产琉璃 to 捷克琉璃
-    function migrateData() {
+    async function migrateData() {
       let changed = false;
       materials.forEach(m => {
         if (m.category && m.category.startsWith('国产琉璃')) {
@@ -718,7 +810,7 @@
           changed = true;
         }
       });
-      if (changed) saveData();
+      if (changed) await saveData();
     }
 
     // ====== HELPERS ======
@@ -751,7 +843,7 @@
     }
 
     // ====== IMAGE COMPRESSION ======
-    function compressImage(file, maxW=400) {
+    function compressImage(file, maxW=280) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = e => {
@@ -762,7 +854,7 @@
             if(w>maxW){ h=(h*maxW)/w; w=maxW; }
             c.width=w; c.height=h;
             c.getContext('2d').drawImage(img,0,0,w,h);
-            resolve(c.toDataURL('image/jpeg',0.7));
+            resolve(c.toDataURL('image/jpeg',0.35));
           };
           img.onerror=reject; img.src=e.target.result;
         };
@@ -896,13 +988,23 @@
               <div><div class="settings-title">清空数据</div><div class="settings-desc">删除所有材料数据（不可恢复）</div></div>
             </div><span style="color:var(--text-muted)">›</span>
           </div>
+          <div class="settings-item" id="storageInfo">
+            <div class="settings-item-left">
+              <div class="settings-icon si-about">💾</div>
+              <div><div class="settings-title">存储用量</div><div class="settings-desc" id="storageDetails">计算中...</div></div>
+            </div>
+          </div>
           <div class="settings-item">
             <div class="settings-item-left">
               <div class="settings-icon si-about">ℹ</div>
-              <div><div class="settings-title">关于喵材料</div><div class="settings-desc">v3.0 · 材料库存管理 · 数据仅保存在本设备</div></div>
+              <div><div class="settings-title">关于喵材料</div><div class="settings-desc">v3.1 · 材料库存管理 · 支持2000+条 · 数据仅保存在本设备</div></div>
             </div>
           </div>
         </div>`;
+      getStorageInfo().then(info => {
+        const el = document.getElementById('storageDetails');
+        if (el) el.textContent = `文本 ${formatBytes(info.textSize)} + 图片 ${formatBytes(info.imgSize)} = ${formatBytes(info.total)} / 可用 ${info.quota}`;
+      });
     }
 
     function renderAll() { renderCategoryBar(); switchTab(currentTab); }
@@ -1049,7 +1151,7 @@
 
     function previewImage(event) {
       const file = event.target.files[0]; if(!file) return;
-      compressImage(file,400).then(dataUrl=>{
+      compressImage(file).then(dataUrl=>{
         pendingImageData = dataUrl;
         const p=$('imgPreview'), u=$('imgUpload');
         p.src=dataUrl; p.style.display='block';
@@ -1064,13 +1166,19 @@
       if(!d.name){showToast('请输入材料名称');return;}
       if(!d.mainCat){showToast('请选择材料分类');return;}
       if(!d.quantity&&d.quantity!==0){showToast('请输入数量');return;}
-      materials.unshift({
+      const item = {
         id:generateId(), name:d.name, category:getCategoryPath(d.mainCat,d.subCat),
         quantity:Number(d.quantity)||0, unit:d.unit, price:d.price?Number(d.price):null,
         notes:d.notes, image:pendingImageData||'',
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+      };
+      materials.unshift(item);
+      pendingImageData=''; closeModal();
+      saveData().then(ok => {
+        if(!ok) { materials.shift(); showToast('保存失败，已撤销更改'); renderAll(); return; }
+        showToast('材料添加成功'); renderAll(); checkBackupReminder();
       });
-      pendingImageData=''; saveData(); closeModal(); showToast('材料添加成功'); renderAll(); checkBackupReminder();
+      renderAll();
     }
 
     function saveEditMaterial() {
@@ -1079,13 +1187,19 @@
       if(!d.mainCat){showToast('请选择材料分类');return;}
       if(!d.quantity&&d.quantity!==0){showToast('请输入数量');return;}
       const idx = materials.findIndex(m=>m.id===editingId); if(idx===-1) return;
+      const oldItem = {...materials[idx]};
       materials[idx] = {
         ...materials[idx], name:d.name, category:getCategoryPath(d.mainCat,d.subCat),
         quantity:Number(d.quantity)||0, unit:d.unit, price:d.price?Number(d.price):null,
         notes:d.notes, image:pendingImageData||materials[idx].image,
         updatedAt:new Date().toISOString()
       };
-      pendingImageData=''; editingId=null; saveData(); closeModal(); showToast('材料已更新'); renderAll();
+      pendingImageData=''; editingId=null; closeModal();
+      saveData().then(ok => {
+        if(!ok) { materials[idx] = oldItem; showToast('保存失败，已撤销更改'); renderAll(); return; }
+        showToast('材料已更新'); renderAll();
+      });
+      renderAll();
     }
 
     function openDetailModal(id) {
@@ -1116,7 +1230,16 @@
         </div></div>`;
     }
 
-    function doDelete(id) { materials=materials.filter(m=>m.id!==id); saveData(); closeConfirm(); closeModal(); showToast('材料已删除'); renderAll(); }
+    function doDelete(id) {
+      const deleted = materials.find(m=>m.id===id);
+      closeConfirm(); closeModal();
+      materials = materials.filter(m=>m.id!==id);
+      saveData().then(ok => {
+        if(!ok && deleted) { materials.push(deleted); showToast('删除失败，已恢复'); }
+        else showToast('材料已删除');
+        renderAll();
+      });
+    }
     function closeConfirm() { $('confirmContainer').innerHTML=''; }
     function closeModal() { $('modalContainer').innerHTML=''; editingId=null; pendingImageData=''; }
 
@@ -1144,7 +1267,24 @@
               <div class="confirm-desc">将导入 <b>${data.materials.length}</b> 个材料<br><span style="color:var(--danger)">当前数据将被覆盖！</span></div>
               <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">取消</button><button class="btn btn-primary" id="confirmImport">确认导入</button></div>
             </div></div>`;
-          $('confirmImport').onclick = () => { materials=data.materials; saveData(); closeConfirm(); showToast(`已导入 ${data.materials.length} 个材料`); renderAll(); };
+          $('confirmImport').onclick = () => {
+            const btn = $('confirmImport');
+            btn.disabled = true; btn.textContent = '导入中...';
+            const old = [...materials];
+            const count = data.materials.length;
+            materials = data.materials;
+            saveData().then(ok => {
+              if(!ok) {
+                materials = old;
+                showToast('导入失败，数据已恢复');
+                renderAll();
+              } else {
+                showToast(`已导入 ${count} 个材料`);
+                renderAll();
+              }
+              closeConfirm();
+            });
+          };
         } catch(err) { showToast('无效的备份文件'); }
       };
       reader.readAsText(file); event.target.value='';
@@ -1158,12 +1298,22 @@
           <div class="confirm-desc">将删除全部 <b>${materials.length}</b> 个材料<br><span style="color:var(--danger)">此操作不可恢复！</span></div>
           <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">取消</button><button class="btn btn-danger" id="confirmClear">确认清空</button></div>
         </div></div>`;
-      $('confirmClear').onclick = () => { materials=[]; saveData(); closeConfirm(); showToast('所有数据已清空'); renderAll(); };
+      $('confirmClear').onclick = () => {
+        const btn = $('confirmClear');
+        btn.disabled = true; btn.textContent = '清空中...';
+        const old = [...materials];
+        materials = [];
+        saveData().then(ok => {
+          if(!ok) { materials = old; showToast('清空失败，数据已恢复'); }
+          else showToast('所有数据已清空');
+          closeConfirm(); renderAll();
+        });
+      };
     }
 
     function checkBackupReminder() {
       if(materials.length>=5&&!localStorage.getItem('miaocailiao_backup_reminded_v3')){
-        localStorage.setItem('miaocailiao_backup_reminded_v3','1');
+        try { localStorage.setItem('miaocailiao_backup_reminded_v3','1'); } catch(e) {}
         $('confirmContainer').innerHTML = `
           <div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card">
             <div class="confirm-icon">💾</div><div class="confirm-title">建议备份数据</div>
@@ -1187,14 +1337,14 @@
     window.addEventListener('appinstalled',()=>{ $('installBtn').style.display='none'; showToast('喵材料已安装到桌面'); });
 
     // ====== INIT ======
-    function init() {
-      loadData();
-      migrateData();
+    async function init() {
+      await loadData();
+      await migrateData();
       renderAll();
       if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
       setTimeout(()=>{
         if(materials.length>=10&&!localStorage.getItem('miaocailiao_backup_reminded_v3_large')){
-          localStorage.setItem('miaocailiao_backup_reminded_v3_large','1');
+          try { localStorage.setItem('miaocailiao_backup_reminded_v3_large','1'); } catch(_) {}
           $('confirmContainer').innerHTML = `<div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card"><div class="confirm-icon">💾</div><div class="confirm-title">建议备份数据</div><div class="confirm-desc">你有 <b>${materials.length}</b> 个材料<br>建议导出备份以防数据丢失</div><div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">稍后再说</button><button class="btn btn-primary" id="backupNow">立即备份</button></div></div></div>`;
           $('backupNow').onclick=()=>{closeConfirm();exportData();};
         }
