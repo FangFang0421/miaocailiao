@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF7F2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="喵材料">
+  <title>喵材料</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23FAF7F2'/><g transform='translate(50,55)'><ellipse cx='0' cy='28' rx='28' ry='7' fill='%23E8DDD3' opacity='0.5'/><path d='M-24 24 Q-28 -4 -12 -12 Q0 -18 12 -12 Q28 -4 24 24 Q0 32 -24 24' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/><ellipse cx='0' cy='-12' rx='22' ry='19' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='3.5'/><path d='M-18 -22 L-22 -40 Q-10 -32 -4 -22' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='3.5' stroke-linejoin='round'/><path d='M18 -22 L22 -40 Q10 -32 4 -22' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='3.5' stroke-linejoin='round'/><path d='M-18 -28 L-20 -38 Q-10 -32 -8 -26' fill='%23FFD6E0' stroke='none'/><path d='M18 -28 L20 -38 Q10 -32 8 -26' fill='%23FFD6E0' stroke='none'/><circle cx='-9' cy='-14' r='3.5' fill='%233D322B'/><circle cx='9' cy='-14' r='3.5' fill='%233D322B'/><ellipse cx='-14' cy='-5' rx='4.5' ry='2.8' fill='%23FFD6E0' opacity='0.75'/><ellipse cx='14' cy='-5' rx='4.5' ry='2.8' fill='%23FFD6E0' opacity='0.75'/><path d='M-4 -6 Q0 -3 4 -6' fill='none' stroke='%23C8956C' stroke-width='2.5' stroke-linecap='round'/><ellipse cx='-16' cy='18' rx='6' ry='4' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='2.5'/><ellipse cx='16' cy='18' rx='6' ry='4' fill='%23FFFDF9' stroke='%23C8956C' stroke-width='2.5'/></g></svg>">
+  <style>
+    :root {
+      --cream: #FAF7F2;
+      --white: #FFFFFF;
+      --text: #3D322B;
+      --text-light: #9B8E84;
+      --text-muted: #C4B8AE;
+      --accent: #C8956C;
+      --accent-light: #F5EDE4;
+      --accent-soft: #FAF3EC;
+      --border: #EBE3D9;
+      --border-light: #F2ECE6;
+      --danger: #D4786B;
+      --danger-light: #FDF0ED;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 500px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ========== Header ========== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--white);
+      z-index: 50;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .header-brand .pets {
+      display: flex;
+      gap: 2px;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .btn-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-icon:active { background: var(--accent-light); }
+
+    /* ========== Search ========== */
+    .search-bar { padding: 0 20px 12px; background: var(--white); }
+    .search-wrapper { position: relative; }
+    .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: var(--text);
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    /* ========== Main Content ========== */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ========== Category Bar ========== */
+    .category-bar {
+      position: sticky;
+      top: 0;
+      background: var(--cream);
+      padding: 12px 20px 8px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      white-space: nowrap;
+    }
+    .category-bar::-webkit-scrollbar { display: none; }
+    .cat-chip {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .cat-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .cat-chip .count {
+      margin-left: 3px;
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    /* ========== Material List ========== */
+    .material-list { padding: 0 20px 20px; }
+    .material-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      border: 1px solid var(--border-light);
+    }
+    .material-card:active { transform: scale(0.985); }
+    .material-img {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--cream);
+      flex-shrink: 0;
+    }
+    .material-img-placeholder {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-soft);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .material-info { flex: 1; min-width: 0; }
+    .material-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .material-meta {
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex; gap: 6px; flex-wrap: wrap;
+      align-items: center;
+    }
+    .material-meta .sep { color: var(--text-muted); }
+    .material-price { font-weight: 600; color: var(--accent); }
+    .material-arrow { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
+
+    /* ========== Empty State ========== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 32px;
+      text-align: center;
+    }
+    .empty-pets {
+      font-size: 56px;
+      margin-bottom: 16px;
+      letter-spacing: 4px;
+    }
+    .empty-state h3 { color: var(--text); font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+    .empty-state p { color: var(--text-light); font-size: 13px; line-height: 1.7; }
+
+    /* ========== FAB ========== */
+    .fab {
+      position: fixed;
+      right: max(20px, calc((100vw - 500px) / 2 + 20px));
+      bottom: calc(var(--safe-bottom) + 76px);
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 26px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(200,149,108,0.25);
+    }
+    .fab:active { transform: scale(0.92); }
+
+    /* ========== Bottom Nav ========== */
+    .bottom-nav {
+      display: flex;
+      background: var(--white);
+      border-top: 1px solid var(--border-light);
+      padding: 8px 20px var(--safe-bottom);
+      z-index: 50;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-item.active { color: var(--accent); font-weight: 600; }
+
+    /* ========== Modal ========== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(61,50,43,0.35);
+      z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 500px;
+      max-height: 88dvh;
+      display: flex; flex-direction: column;
+      animation: slideUp 0.28s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 12px;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--text); }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: var(--cream);
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+    }
+    .modal-body {
+      padding: 8px 20px 20px;
+      overflow-y: auto; flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-footer {
+      padding: 12px 20px var(--safe-bottom);
+      display: flex; gap: 10px;
+      border-top: 1px solid var(--border-light);
+    }
+    .modal-title-icon { margin-right: 4px; }
+
+    /* ========== Form ========== */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .form-label .required { color: var(--danger); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .form-textarea { resize: vertical; min-height: 64px; }
+    .form-row { display: flex; gap: 10px; }
+    .form-row > * { flex: 1; }
+
+    .img-upload {
+      width: 100%; height: 120px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      overflow: hidden; position: relative;
+      flex-direction: column; gap: 4px;
+      color: var(--text-muted); font-size: 13px;
+      background: var(--cream);
+    }
+    .img-upload:hover, .img-upload:active { border-color: var(--accent); background: var(--accent-soft); }
+    .img-upload.has-img { border-style: solid; border-color: var(--border); background: none; }
+    .img-upload img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .img-upload .placeholder-text { z-index: 1; pointer-events: none; }
+
+    /* ========== Buttons ========== */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 24px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      text-align: center;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:active { background: #B07D56; }
+    .btn-secondary { background: var(--cream); color: var(--text); }
+    .btn-secondary:active { background: var(--border); }
+    .btn-danger { background: var(--danger-light); color: var(--danger); }
+    .btn-danger:active { background: #F8E4E0; }
+
+    /* ========== Stats ========== */
+    .stats-header {
+      padding: 24px 20px 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stats-summary {
+      display: flex;
+      padding: 0 20px 8px;
+      gap: 8px;
+    }
+    .stats-kpi {
+      flex: 1;
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border-light);
+    }
+    .stats-kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stats-kpi-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 20px 20px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border-light);
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stat-emoji { font-size: 20px; vertical-align: middle; margin-right: 4px; }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ========== Settings ========== */
+    .settings-header {
+      padding: 24px 20px 16px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .settings-section { padding: 0 20px 20px; }
+    .settings-item {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid var(--border-light);
+    }
+    .settings-item:active { background: var(--accent-soft); }
+    .settings-item-left { display: flex; align-items: center; gap: 12px; }
+    .settings-icon {
+      width: 38px; height: 38px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .settings-icon.si-export { background: #E8F0E4; }
+    .settings-icon.si-import { background: #F5EDE4; }
+    .settings-icon.si-clear { background: #FDF0ED; }
+    .settings-icon.si-about { background: var(--accent-soft); }
+    .settings-title { font-size: 15px; font-weight: 600; }
+    .settings-desc { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+
+    /* ========== Sidebar ========== */
+    .sidebar-overlay {
+      position: fixed; inset: 0;
+      background: rgba(61,50,43,0.35);
+      z-index: 150;
+      display: flex;
+      animation: fadeIn 0.2s;
+    }
+    .sidebar {
+      width: 275px; max-width: 78vw;
+      background: var(--white);
+      height: 100%; overflow-y: auto;
+      animation: slideLeft 0.25s ease-out;
+      display: flex; flex-direction: column;
+    }
+    @keyframes slideLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+    .sidebar-header {
+      padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sidebar-title { font-size: 17px; font-weight: 700; }
+    .sidebar-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+    .sidebar-group { margin-bottom: 2px; }
+    .sidebar-group-title {
+      padding: 11px 20px;
+      font-size: 13px; font-weight: 700;
+      color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sidebar-group-title:active { background: var(--accent-soft); }
+    .sidebar-sub {
+      padding: 9px 20px 9px 42px;
+      font-size: 14px; color: var(--text-light);
+      cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.15s;
+    }
+    .sidebar-sub:active { background: var(--accent-soft); }
+    .sidebar-sub .cat-count {
+      font-size: 12px; color: var(--text-muted);
+      background: var(--cream);
+      padding: 1px 8px; border-radius: 10px;
+    }
+    .sidebar-backdrop { flex: 1; }
+    .sidebar-footer {
+      padding: 12px 20px;
+      font-size: 12px; color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* ========== Toast ========== */
+    .toast {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(61,50,43,0.88);
+      color: #fff; padding: 10px 22px;
+      border-radius: 20px; font-size: 13px;
+      z-index: 999; animation: toastIn 0.3s ease-out;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      font-weight: 500;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* ========== Confirm Dialog ========== */
+    .confirm-dialog {
+      position: fixed; inset: 0;
+      background: rgba(61,50,43,0.45);
+      z-index: 250;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s; padding: 24px;
+    }
+    .confirm-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px 20px;
+      max-width: 300px; width: 100%;
+      text-align: center;
+    }
+    .confirm-icon { font-size: 44px; margin-bottom: 10px; }
+    .confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .confirm-desc { font-size: 14px; color: var(--text-light); margin-bottom: 22px; line-height: 1.7; }
+    .confirm-actions { display: flex; gap: 10px; }
+
+    /* ========== Detail ========== */
+    .detail-img {
+      width: 100%; max-height: 180px;
+      object-fit: cover; border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+    }
+    .detail-group { margin-bottom: 14px; }
+    .detail-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 600; }
+    .detail-value { font-size: 15px; font-weight: 500; color: var(--text); }
+
+    /* ========== Sub-category chips ========== */
+    .cat-sub-list {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .cat-sub-chip {
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      font-size: 12px; cursor: pointer;
+      transition: all 0.15s;
+      background: var(--white);
+      color: var(--text-light);
+    }
+    .cat-sub-chip.selected {
+      background: var(--accent);
+      color: #fff; border-color: var(--accent);
+      font-weight: 600;
+    }
+    .cat-sub-chip .sub-count { opacity: 0.7; font-size: 11px; margin-left: 2px; }
+
+    /* ========== Decorative ========== */
+    .paw-divider {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      letter-spacing: 6px;
+      padding: 4px 0;
+      opacity: 0.5;
+    }
+    .decorative-pets {
+      position: fixed;
+      bottom: 120px;
+      right: max(80px, calc((100vw - 500px) / 2 + 80px));
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+      rotate: -5deg;
+    }
+    .decorative-pets svg { width: 42px; height: 42px; }
+
+    /* Hand-drawn pet icons */
+    .pet-icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+    .pet-illustration { display: block; margin: 0 auto; }
+    .header-brand .pets { display: flex; align-items: center; gap: 2px; }
+    .nav-item .nav-icon svg { width: 22px; height: 22px; }
+    .modal-title-icon svg { width: 24px; height: 24px; }
+    .settings-header svg, .sidebar-title svg { margin-right: 6px; }
+    .empty-pets { margin-bottom: 8px; }
+
+    /* Install */
+    .btn-sm {
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn-icon" onclick="toggleSidebar()" aria-label="菜单">☰</button>
+        <div class="header-brand">
+          <span class="pets"><svg class="pet-icon" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -4 -12 -12 Q0 -18 12 -12 Q28 -4 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="22" ry="19" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-18 -22 L-22 -40 Q-10 -32 -4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M18 -22 L22 -40 Q10 -32 4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M-18 -28 L-20 -38 Q-10 -32 -8 -26" fill="#FFD6E0" stroke="none"/><path d="M18 -28 L20 -38 Q10 -32 8 -26" fill="#FFD6E0" stroke="none"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><path d="M-4 -6 Q0 -3 4 -6" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg><svg class="pet-icon" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -2 -12 -10 Q0 -16 12 -10 Q28 -2 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="23" ry="20" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-22 -22 Q-34 -8 -28 10 Q-18 16 -10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M22 -22 Q34 -8 28 10 Q18 16 10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="0" cy="-2" rx="5" ry="4" fill="#FFD6E0" opacity="0.4"/><path d="M-4 4 Q0 7 4 4" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg></span>喵材料
+        </div>
+      </div>
+      <div id="installBtn" style="display:none;"></div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar" id="searchBar">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" placeholder="搜索材料..." id="searchInput" oninput="onSearch()">
+      </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-bar" id="categoryBar"></div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent"></div>
+
+    <!-- FAB -->
+    <button class="fab" onclick="openAddModal()" id="fabBtn" title="添加材料">+</button>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-item active" data-tab="materials" onclick="switchTab('materials')">
+        <span class="nav-icon"><svg class="pet-icon" width="22" height="22" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -4 -12 -12 Q0 -18 12 -12 Q28 -4 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="22" ry="19" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-18 -22 L-22 -40 Q-10 -32 -4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M18 -22 L22 -40 Q10 -32 4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M-18 -28 L-20 -38 Q-10 -32 -8 -26" fill="#FFD6E0" stroke="none"/><path d="M18 -28 L20 -38 Q10 -32 8 -26" fill="#FFD6E0" stroke="none"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><path d="M-4 -6 Q0 -3 4 -6" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg></span>材料
+      </button>
+      <button class="nav-item" data-tab="stats" onclick="switchTab('stats')">
+        <span class="nav-icon">📊</span>统计
+      </button>
+      <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+        <span class="nav-icon"><svg class="pet-icon" width="22" height="22" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -2 -12 -10 Q0 -16 12 -10 Q28 -2 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="23" ry="20" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-22 -22 Q-34 -8 -28 10 Q-18 16 -10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M22 -22 Q34 -8 28 10 Q18 16 10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="0" cy="-2" rx="5" ry="4" fill="#FFD6E0" opacity="0.4"/><path d="M-4 4 Q0 7 4 4" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg></span>设置
+      </button>
+    </div>
+  </div>
+
+  <div id="modalContainer"></div>
+  <div id="confirmContainer"></div>
+  <div id="toastContainer"></div>
+  <div id="sidebarContainer"></div>
+
+  <script>
+    // ====== DATA — ordered: 捷克琉璃 first, then 米珠, then 大牌 ======
+    const CAT_ORDER = ['捷克琉璃', '米珠', '大牌'];
+    const DEFAULT_CATEGORIES = {};
+    DEFAULT_CATEGORIES['捷克琉璃'] = ['银和白','黑和金','红','黄','橘','粉','浅紫','葡萄紫','薄荷','浅绿','深绿','天蓝','克莱因蓝','牛股描蓝','琥珀','巧克力'];
+    DEFAULT_CATEGORIES['米珠'] = [];
+    DEFAULT_CATEGORIES['大牌'] = ['切面大花','十字架','葡萄牌','爱心牌','蝴蝶牌','蜻蜓牌','猫头牌','燕子牌','浣熊牌','百合牌','其他大牌'];
+
+    const CAT_ICONS = { '捷克琉璃': '💎', '米珠': '🔮', '大牌': '🃏' };
+
+    let currentTab = 'materials';
+    let currentMainCategory = '全部';
+    let currentSubCategory = null;
+    let materials = [];
+    let sidebarOpen = false;
+    let deferredPrompt = null;
+
+    // ====== STORAGE ======
+    function saveData() { localStorage.setItem('miaocailiao_v3', JSON.stringify(materials)); }
+    function loadData() {
+      try {
+        // Try v3 first, fallback to old keys
+        let d = localStorage.getItem('miaocailiao_v3');
+        if (!d) d = localStorage.getItem('miaocailiao_materials');
+        if (d) materials = JSON.parse(d);
+      } catch(e) { materials = []; }
+    }
+
+    // Migration: rename old 国产琉璃 to 捷克琉璃
+    function migrateData() {
+      let changed = false;
+      materials.forEach(m => {
+        if (m.category && m.category.startsWith('国产琉璃')) {
+          m.category = m.category.replace('国产琉璃', '捷克琉璃');
+          changed = true;
+        }
+      });
+      if (changed) saveData();
+    }
+
+    // ====== HELPERS ======
+    function $(id) { return document.getElementById(id); }
+    function showToast(msg) {
+      const c = $('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast'; el.textContent = msg;
+      c.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,6); }
+    function formatPrice(p) { return p ? '¥'+Number(p).toFixed(2) : '-'; }
+    function getCategoryPath(main, sub) { return sub ? main+' / '+sub : main; }
+    function parseCategoryPath(path) { const p = path.split(' / '); return {main:p[0], sub:p[1]||null}; }
+    function getMainCategoryCount(mainCat) { return materials.filter(m => parseCategoryPath(m.category).main===mainCat).length; }
+    function getSubCategoryCount(mainCat, subCat) { return materials.filter(m => { const p=parseCategoryPath(m.category); return p.main===mainCat && p.sub===subCat; }).length; }
+
+    function getCategoryKeys() { return CAT_ORDER; }
+
+    // ====== HAND-DRAWN PET SVGs ======
+    function catSVG(size=24) {
+      return `<svg class="pet-icon" width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="display:inline-block;vertical-align:middle;"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -4 -12 -12 Q0 -18 12 -12 Q28 -4 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="22" ry="19" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-18 -22 L-22 -40 Q-10 -32 -4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M18 -22 L22 -40 Q10 -32 4 -22" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M-18 -28 L-20 -38 Q-10 -32 -8 -26" fill="#FFD6E0" stroke="none"/><path d="M18 -28 L20 -38 Q10 -32 8 -26" fill="#FFD6E0" stroke="none"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><path d="M-4 -6 Q0 -3 4 -6" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg>`;
+    }
+    function dogSVG(size=24) {
+      return `<svg class="pet-icon" width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="display:inline-block;vertical-align:middle;"><g transform="translate(50,55)"><ellipse cx="0" cy="30" rx="30" ry="7" fill="#E8DDD3" opacity="0.45"/><path d="M-24 26 Q-28 -2 -12 -10 Q0 -16 12 -10 Q28 -2 24 26 Q0 34 -24 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="0" cy="-12" rx="23" ry="20" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5"/><path d="M-22 -22 Q-34 -8 -28 10 Q-18 16 -10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><path d="M22 -22 Q34 -8 28 10 Q18 16 10 4" fill="#FFFDF9" stroke="#C8956C" stroke-width="3.5" stroke-linejoin="round"/><circle cx="-9" cy="-14" r="3.5" fill="#3D322B"/><circle cx="9" cy="-14" r="3.5" fill="#3D322B"/><ellipse cx="-14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="14" cy="-5" rx="4.5" ry="2.8" fill="#FFD6E0" opacity="0.75"/><ellipse cx="0" cy="-2" rx="5" ry="4" fill="#FFD6E0" opacity="0.4"/><path d="M-4 4 Q0 7 4 4" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/><ellipse cx="16" cy="18" rx="6" ry="4" fill="#FFFDF9" stroke="#C8956C" stroke-width="2.5"/></g></svg>`;
+    }
+    function catIllustration(size=140) {
+      return `<svg class="pet-illustration" width="${size}" height="${size}" viewBox="0 0 140 140" aria-hidden="true" style="display:block;margin:0 auto;"><ellipse cx="70" cy="122" rx="42" ry="9" fill="#E8DDD3" opacity="0.45"/><path d="M30 100 Q24 55 42 44 Q60 34 78 44 Q96 55 90 100 Q60 112 30 100" fill="#FFFDF9" stroke="#C8956C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="70" cy="42" rx="32" ry="28" fill="#FFFDF9" stroke="#C8956C" stroke-width="3"/><path d="M42 28 L36 4 Q52 14 60 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3" stroke-linejoin="round"/><path d="M98 28 L104 4 Q88 14 80 26" fill="#FFFDF9" stroke="#C8956C" stroke-width="3" stroke-linejoin="round"/><path d="M44 20 L40 8 Q52 16 56 24" fill="#FFD6E0" stroke="none"/><path d="M96 20 L100 8 Q88 16 84 24" fill="#FFD6E0" stroke="none"/><circle cx="58" cy="40" r="4" fill="#3D322B"/><circle cx="82" cy="40" r="4" fill="#3D322B"/><ellipse cx="52" cy="52" rx="5" ry="3.5" fill="#FFD6E0" opacity="0.8"/><ellipse cx="88" cy="52" rx="5" ry="3.5" fill="#FFD6E0" opacity="0.8"/><path d="M66 48 Q70 52 74 48" fill="none" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/><path d="M24 44 L14 40" stroke="#C8956C" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/><path d="M24 52 L12 54" stroke="#C8956C" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/><path d="M116 44 L126 40" stroke="#C8956C" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/><path d="M116 52 L128 54" stroke="#C8956C" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/><ellipse cx="42" cy="92" rx="9" ry="6" fill="#FFFDF9" stroke="#C8956C" stroke-width="2"/><ellipse cx="98" cy="92" rx="9" ry="6" fill="#FFFDF9" stroke="#C8956C" stroke-width="2"/><path d="M96 78 Q104 60 114 52" stroke="#7DB9A8" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="114" cy="48" r="3.5" fill="#FFE082"/><circle cx="114" cy="41" r="5" fill="#FFB7C5" opacity="0.9"/><circle cx="120" cy="48" r="5" fill="#FFB7C5" opacity="0.9"/><circle cx="114" cy="55" r="5" fill="#FFB7C5" opacity="0.9"/><circle cx="108" cy="48" r="5" fill="#FFB7C5" opacity="0.9"/></svg>`;
+    }
+
+    // ====== IMAGE COMPRESSION ======
+    function compressImage(file, maxW=400) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            let w=img.width, h=img.height;
+            if(w>maxW){ h=(h*maxW)/w; w=maxW; }
+            c.width=w; c.height=h;
+            c.getContext('2d').drawImage(img,0,0,w,h);
+            resolve(c.toDataURL('image/jpeg',0.7));
+          };
+          img.onerror=reject; img.src=e.target.result;
+        };
+        reader.onerror=reject; reader.readAsDataURL(file);
+      });
+    }
+
+    // ====== RENDER ======
+    function renderCategoryBar() {
+      const bar = $('categoryBar');
+      const cats = ['全部', ...CAT_ORDER];
+      bar.innerHTML = cats.map(cat => {
+        const count = cat==='全部' ? materials.length : getMainCategoryCount(cat);
+        return `<div class="cat-chip${currentMainCategory===cat?' active':''}" onclick="selectMainCategory('${cat}')">${CAT_ICONS[cat]||'📦'} ${cat}<span class="count">${count}</span></div>`;
+      }).join('');
+    }
+
+    function selectMainCategory(cat) {
+      currentMainCategory = cat;
+      currentSubCategory = null;
+      renderAll();
+    }
+
+    function renderMaterialList() {
+      const container = $('mainContent');
+      const searchTerm = $('searchInput').value.trim().toLowerCase();
+      let filtered = materials;
+
+      if (currentMainCategory!=='全部') {
+        filtered = filtered.filter(m => parseCategoryPath(m.category).main===currentMainCategory);
+        if (currentSubCategory) filtered = filtered.filter(m => parseCategoryPath(m.category).sub===currentSubCategory);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter(m => m.name.toLowerCase().includes(searchTerm) || m.category.toLowerCase().includes(searchTerm) || (m.notes&&m.notes.toLowerCase().includes(searchTerm)));
+      }
+
+      let subCatHtml = '';
+      const mainCat = currentMainCategory;
+      const subs = DEFAULT_CATEGORIES[mainCat];
+      if (mainCat!=='全部' && subs && subs.length>0) {
+        subCatHtml = `<div style="padding:4px 20px 8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <div class="cat-sub-chip${!currentSubCategory?' selected':''}" onclick="currentSubCategory=null;renderAll();">全部</div>
+          ${subs.map(s => { const cnt=getSubCategoryCount(mainCat,s); return `<div class="cat-sub-chip${currentSubCategory===s?' selected':''}" onclick="currentSubCategory='${s}';renderAll();">${s}<span class="sub-count">${cnt}</span></div>`; }).join('')}
+        </div>`;
+      }
+
+      if (filtered.length===0) {
+        const pets = searchTerm ? catSVG(52) : catIllustration(150);
+        const title = searchTerm ? '没有找到匹配的材料' : (currentMainCategory==='全部' ? '还没有添加材料哦' : '这个分类下还没有材料');
+        const desc = searchTerm ? '试试其他关键词吧' : '点击右下角 + 添加第一个材料';
+        container.innerHTML = subCatHtml + `<div class="empty-state"><div class="empty-pets">${pets}</div><h3>${title}</h3><p>${desc}</p></div>`;
+      } else {
+        container.innerHTML = subCatHtml + `<div class="material-list">`+ filtered.map(m => `
+          <div class="material-card" onclick="openDetailModal('${m.id}')">
+            ${m.image ? `<img class="material-img" src="${m.image}" alt="${m.name}" loading="lazy">` : `<div class="material-img-placeholder">📦</div>`}
+            <div class="material-info">
+              <div class="material-name">${m.name}</div>
+              <div class="material-meta">
+                <span>${m.category}</span>
+                ${m.quantity ? `<span class="sep">·</span><span>×${m.quantity}${m.unit||''}</span>` : ''}
+                ${m.price ? `<span class="sep">·</span><span class="material-price">${formatPrice(m.price)}</span>` : ''}
+              </div>
+            </div>
+            <span class="material-arrow">›</span>
+          </div>
+        `).join('')+`</div>`;
+      }
+    }
+
+    function renderStats() {
+      const container = $('mainContent');
+      const totalQty = materials.reduce((s,m)=>s+(Number(m.quantity)||0),0);
+      const totalValue = materials.reduce((s,m)=>s+(Number(m.price)||0)*(Number(m.quantity)||0),0);
+      const catCount = new Set(materials.map(m=>parseCategoryPath(m.category).main)).size;
+
+      const catBreakdown = CAT_ORDER.map(cat=>{
+        const items = materials.filter(m=>parseCategoryPath(m.category).main===cat);
+        const val = items.reduce((s,m)=>s+(Number(m.price)||0)*(Number(m.quantity)||0),0);
+        return {cat, count:items.length, value:val};
+      }).filter(c=>c.count>0);
+
+      container.innerHTML = `
+        <div class="stats-header">📊 统计概览</div>
+        <div class="stats-summary">
+          <div class="stats-kpi">
+            <div class="stats-kpi-value">${materials.length}</div>
+            <div class="stats-kpi-label">材料总数</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-value">${totalQty}</div>
+            <div class="stats-kpi-label">库存总量</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-value">${catCount}</div>
+            <div class="stats-kpi-label">使用分类</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-value">${formatPrice(totalValue)}</div>
+            <div class="stats-kpi-label">库存价值</div>
+          </div>
+        </div>
+        ${catBreakdown.length>0 ? `<div class="paw-divider">· · 🐾 · ·</div><div class="stats-grid">${catBreakdown.map(c=>`
+          <div class="stat-card">
+            <div class="stat-value"><span class="stat-emoji">${CAT_ICONS[c.cat]||'📦'}</span>${c.count}</div>
+            <div class="stat-label">${c.cat}${c.value>0?' · '+formatPrice(c.value):''}</div>
+          </div>
+        `).join('')}</div>`:''}`;
+    }
+
+    function renderSettings() {
+      const container = $('mainContent');
+      container.innerHTML = `
+        <div class="settings-header">${dogSVG(28)}设置</div>
+        <div class="settings-section">
+          <div class="settings-item" onclick="exportData()">
+            <div class="settings-item-left">
+              <div class="settings-icon si-export">📤</div>
+              <div><div class="settings-title">导出备份</div><div class="settings-desc">将所有材料数据导出为备份文件</div></div>
+            </div><span style="color:var(--text-muted)">›</span>
+          </div>
+          <div class="settings-item" onclick="document.getElementById('importFile').click()">
+            <div class="settings-item-left">
+              <div class="settings-icon si-import">📥</div>
+              <div><div class="settings-title">恢复备份</div><div class="settings-desc">从备份文件恢复数据（会覆盖当前数据）</div></div>
+            </div><span style="color:var(--text-muted)">›</span>
+          </div>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+          <div class="settings-item" onclick="clearAllData()">
+            <div class="settings-item-left">
+              <div class="settings-icon si-clear">🗑</div>
+              <div><div class="settings-title">清空数据</div><div class="settings-desc">删除所有材料数据（不可恢复）</div></div>
+            </div><span style="color:var(--text-muted)">›</span>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <div class="settings-icon si-about">ℹ</div>
+              <div><div class="settings-title">关于喵材料</div><div class="settings-desc">v3.0 · 材料库存管理 · 数据仅保存在本设备</div></div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderAll() { renderCategoryBar(); switchTab(currentTab); }
+
+    // ====== TABS ======
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab===tab));
+      const fab=$('fabBtn'), sb=$('searchBar');
+      if(tab==='materials'){ sb.style.display='block'; fab.style.display='flex'; renderMaterialList(); }
+      else if(tab==='stats'){ sb.style.display='none'; fab.style.display='none'; renderStats(); }
+      else { sb.style.display='none'; fab.style.display='none'; renderSettings(); }
+    }
+    function onSearch() { if(currentTab==='materials') renderMaterialList(); }
+
+    // ====== SIDEBAR ======
+    function toggleSidebar() { sidebarOpen ? closeSidebar() : openSidebar(); }
+    function openSidebar() {
+      sidebarOpen = true;
+      const html = getCategoryKeys().map(main => {
+        const mainCount = getMainCategoryCount(main);
+        const subs = DEFAULT_CATEGORIES[main];
+        const subHtml = subs&&subs.length>0 ? subs.map(sub => {
+          const cnt = getSubCategoryCount(main, sub);
+          return `<div class="sidebar-sub" onclick="navigateFromSidebar('${main}','${sub}')">${sub}<span class="cat-count">${cnt}</span></div>`;
+        }).join('') : '';
+        return `<div class="sidebar-group"><div class="sidebar-group-title" onclick="navigateFromSidebar('${main}',null)">${CAT_ICONS[main]||'📦'} ${main}<span class="cat-count">${mainCount}</span></div>${subHtml}</div>`;
+      }).join('');
+
+      $('sidebarContainer').innerHTML = `
+        <div class="sidebar-overlay">
+          <div class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">${catSVG(22)}${dogSVG(22)}材料分类</div><button class="modal-close" onclick="closeSidebar()">✕</button></div>
+            <div class="sidebar-list">
+              <div class="sidebar-group-title" onclick="navigateFromSidebar('全部',null)" style="background:${currentMainCategory==='全部'?'var(--accent-soft)':'transparent'};border-radius:8px;margin:4px 12px;">
+                📦 全部材料 <span class="cat-count">${materials.length}</span>
+              </div>
+              ${html}
+            </div>
+            <div class="sidebar-footer">${materials.length} 个材料 · ${new Set(materials.map(m=>parseCategoryPath(m.category).main)).size} 个分类</div>
+          </div>
+          <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+        </div>`;
+    }
+    function closeSidebar() { sidebarOpen=false; $('sidebarContainer').innerHTML=''; }
+    function navigateFromSidebar(main, sub) {
+      currentMainCategory=main; currentSubCategory=sub; currentTab='materials';
+      document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab==='materials'));
+      closeSidebar(); renderAll();
+    }
+
+    // ====== MODALS ======
+    function openAddModal() {
+      const mainCats = getCategoryKeys();
+      $('modalContainer').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+          <div class="modal-header"><div class="modal-title"><span class="modal-title-icon">${catSVG(24)}</span>添加材料</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body">
+            <div class="form-group"><label class="form-label">材料图片</label>
+              <div class="img-upload" id="imgUpload" onclick="document.getElementById('imgInput').click()">
+                <span class="placeholder-text">📷<br>点击拍照或选择图片</span><img id="imgPreview" style="display:none">
+              </div><input type="file" id="imgInput" accept="image/*" capture="environment" style="display:none" onchange="previewImage(event)">
+            </div>
+            <div class="form-group"><label class="form-label">材料名称 <span class="required">*</span></label><input class="form-input" id="addName" placeholder="输入材料名称"></div>
+            <div class="form-group"><label class="form-label">材料分类 <span class="required">*</span></label>
+              <select class="form-select" id="addMainCat" onchange="updateSubCats()"><option value="">选择主分类</option>${mainCats.map(c=>`<option value="${c}">${CAT_ICONS[c]||'📦'} ${c}</option>`).join('')}</select>
+            </div>
+            <div class="form-group" id="subCatGroup" style="display:none"></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">数量 <span class="required">*</span></label><input class="form-input" id="addQty" type="number" min="0" step="1" placeholder="0"></div>
+              <div class="form-group"><label class="form-label">单位</label><input class="form-input" id="addUnit" placeholder="如：个、米、克"></div>
+            </div>
+            <div class="form-group"><label class="form-label">单价 (元)</label><input class="form-input" id="addPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="addNotes" placeholder="添加备注信息..."></textarea></div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveNewMaterial()">保存</button></div>
+        </div></div>`;
+    }
+
+    let editingId = null;
+
+    function openEditModal(id) {
+      const m = materials.find(x=>x.id===id); if(!m) return;
+      editingId = id;
+      const mainCats = getCategoryKeys();
+      const p = parseCategoryPath(m.category);
+      $('modalContainer').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+          <div class="modal-header"><div class="modal-title">✏️ 编辑材料</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body">
+            <div class="form-group"><label class="form-label">材料图片</label>
+              <div class="img-upload${m.image?' has-img':''}" id="imgUpload" onclick="document.getElementById('imgInput').click()">
+                ${m.image?`<img id="imgPreview" src="${m.image}" style="display:block">`:`<span class="placeholder-text">📷<br>点击拍照或选择图片</span><img id="imgPreview" style="display:none">`}
+              </div><input type="file" id="imgInput" accept="image/*" capture="environment" style="display:none" onchange="previewImage(event)">
+            </div>
+            <div class="form-group"><label class="form-label">材料名称 <span class="required">*</span></label><input class="form-input" id="addName" value="${escapeHtml(m.name)}"></div>
+            <div class="form-group"><label class="form-label">材料分类 <span class="required">*</span></label>
+              <select class="form-select" id="addMainCat" onchange="updateSubCats()"><option value="">选择主分类</option>${mainCats.map(c=>`<option value="${c}" ${p.main===c?'selected':''}>${CAT_ICONS[c]||'📦'} ${c}</option>`).join('')}</select>
+            </div>
+            <div class="form-group" id="subCatGroup"></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">数量 <span class="required">*</span></label><input class="form-input" id="addQty" type="number" min="0" step="1" value="${m.quantity||0}"></div>
+              <div class="form-group"><label class="form-label">单位</label><input class="form-input" id="addUnit" value="${escapeHtml(m.unit||'')}"></div>
+            </div>
+            <div class="form-group"><label class="form-label">单价 (元)</label><input class="form-input" id="addPrice" type="number" min="0" step="0.01" value="${m.price||''}"></div>
+            <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="addNotes">${escapeHtml(m.notes||'')}</textarea></div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveEditMaterial()">保存</button></div>
+        </div></div>`;
+      updateSubCats(p.sub);
+    }
+
+    function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function updateSubCats(selectedSub) {
+      const mc = $('addMainCat')?.value;
+      const subs = DEFAULT_CATEGORIES[mc];
+      const group = $('subCatGroup'); if(!group) return;
+      if(subs && subs.length>0) {
+        group.style.display='block';
+        group.innerHTML = `<label class="form-label">子分类</label><div class="cat-sub-list">${subs.map(s=>`<div class="cat-sub-chip${s===selectedSub?' selected':''}" onclick="selectSubCat('${s}')">${s}</div>`).join('')}</div><input type="hidden" id="addSubCat" value="${selectedSub||''}">`;
+      } else { group.style.display='none'; group.innerHTML=''; }
+    }
+
+    function selectSubCat(sub) {
+      $('addSubCat').value = sub;
+      document.querySelectorAll('#subCatGroup .cat-sub-chip').forEach(el=>el.classList.toggle('selected',el.textContent===sub));
+    }
+
+    function getFormData() {
+      return {
+        name: $('addName').value.trim(),
+        mainCat: $('addMainCat').value,
+        subCat: ($('addSubCat')?.value||'').trim(),
+        quantity: $('addQty').value,
+        unit: $('addUnit').value.trim(),
+        price: $('addPrice').value,
+        notes: $('addNotes').value.trim(),
+        image: $('imgPreview').src||''
+      };
+    }
+
+    let pendingImageData = '';
+
+    function previewImage(event) {
+      const file = event.target.files[0]; if(!file) return;
+      compressImage(file,400).then(dataUrl=>{
+        pendingImageData = dataUrl;
+        const p=$('imgPreview'), u=$('imgUpload');
+        p.src=dataUrl; p.style.display='block';
+        if(u) u.classList.add('has-img');
+        const ph=u?.querySelector('.placeholder-text');
+        if(ph) ph.style.display='none';
+      }).catch(()=>showToast('图片处理失败'));
+    }
+
+    function saveNewMaterial() {
+      const d = getFormData();
+      if(!d.name){showToast('请输入材料名称');return;}
+      if(!d.mainCat){showToast('请选择材料分类');return;}
+      if(!d.quantity&&d.quantity!==0){showToast('请输入数量');return;}
+      materials.unshift({
+        id:generateId(), name:d.name, category:getCategoryPath(d.mainCat,d.subCat),
+        quantity:Number(d.quantity)||0, unit:d.unit, price:d.price?Number(d.price):null,
+        notes:d.notes, image:pendingImageData||'',
+        createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+      });
+      pendingImageData=''; saveData(); closeModal(); showToast('材料添加成功'); renderAll(); checkBackupReminder();
+    }
+
+    function saveEditMaterial() {
+      const d = getFormData();
+      if(!d.name){showToast('请输入材料名称');return;}
+      if(!d.mainCat){showToast('请选择材料分类');return;}
+      if(!d.quantity&&d.quantity!==0){showToast('请输入数量');return;}
+      const idx = materials.findIndex(m=>m.id===editingId); if(idx===-1) return;
+      materials[idx] = {
+        ...materials[idx], name:d.name, category:getCategoryPath(d.mainCat,d.subCat),
+        quantity:Number(d.quantity)||0, unit:d.unit, price:d.price?Number(d.price):null,
+        notes:d.notes, image:pendingImageData||materials[idx].image,
+        updatedAt:new Date().toISOString()
+      };
+      pendingImageData=''; editingId=null; saveData(); closeModal(); showToast('材料已更新'); renderAll();
+    }
+
+    function openDetailModal(id) {
+      const m = materials.find(x=>x.id===id); if(!m) return;
+      $('modalContainer').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+          <div class="modal-header"><div class="modal-title">材料详情</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body">
+            ${m.image?`<img class="detail-img" src="${m.image}" alt="${m.name}">`:''}
+            <div class="detail-group"><div class="detail-label">名称</div><div class="detail-value">${m.name}</div></div>
+            <div class="detail-group"><div class="detail-label">分类</div><div class="detail-value">${m.category}</div></div>
+            <div class="detail-group"><div class="detail-label">数量</div><div class="detail-value">×${m.quantity} ${m.unit||''}</div></div>
+            ${m.price?`<div class="detail-group"><div class="detail-label">单价 · 小计</div><div class="detail-value">${formatPrice(m.price)} · <span style="color:var(--accent);font-weight:700">${formatPrice(m.price*m.quantity)}</span></div></div>`:''}
+            ${m.notes?`<div class="detail-group"><div class="detail-label">备注</div><div class="detail-value">${m.notes}</div></div>`:''}
+            <div class="detail-group"><div class="detail-label">更新于</div><div class="detail-value" style="font-size:12px;color:var(--text-muted)">${new Date(m.updatedAt).toLocaleString('zh-CN')}</div></div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-danger" onclick="confirmDelete('${m.id}')">删除</button><button class="btn btn-primary" onclick="closeModal();openEditModal('${m.id}')">编辑</button></div>
+        </div></div>`;
+    }
+
+    function confirmDelete(id) {
+      const m = materials.find(x=>x.id===id); if(!m) return;
+      $('confirmContainer').innerHTML = `
+        <div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card">
+          <div class="confirm-icon">${catSVG(44)}</div><div class="confirm-title">确认删除</div>
+          <div class="confirm-desc">真的要删掉<b>「${escapeHtml(m.name)}」</b>吗？<br>删掉就找不回来啦~</div>
+          <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">还是留着吧</button><button class="btn btn-danger" onclick="doDelete('${id}')">确认删除</button></div>
+        </div></div>`;
+    }
+
+    function doDelete(id) { materials=materials.filter(m=>m.id!==id); saveData(); closeConfirm(); closeModal(); showToast('材料已删除'); renderAll(); }
+    function closeConfirm() { $('confirmContainer').innerHTML=''; }
+    function closeModal() { $('modalContainer').innerHTML=''; editingId=null; pendingImageData=''; }
+
+    // ====== EXPORT / IMPORT ======
+    function exportData() {
+      const data = { version:'3.0', exportedAt:new Date().toISOString(), materials };
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=`喵材料备份_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url); showToast('备份文件已下载');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if(!data.materials||!Array.isArray(data.materials)) throw new Error('格式错误');
+          $('confirmContainer').innerHTML = `
+            <div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card">
+              <div class="confirm-icon">⚠️</div><div class="confirm-title">确认恢复备份</div>
+              <div class="confirm-desc">将导入 <b>${data.materials.length}</b> 个材料<br><span style="color:var(--danger)">当前数据将被覆盖！</span></div>
+              <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">取消</button><button class="btn btn-primary" id="confirmImport">确认导入</button></div>
+            </div></div>`;
+          $('confirmImport').onclick = () => { materials=data.materials; saveData(); closeConfirm(); showToast(`已导入 ${data.materials.length} 个材料`); renderAll(); };
+        } catch(err) { showToast('无效的备份文件'); }
+      };
+      reader.readAsText(file); event.target.value='';
+    }
+
+    function clearAllData() {
+      if(materials.length===0){showToast('没有数据需要清空');return;}
+      $('confirmContainer').innerHTML = `
+        <div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card">
+          <div class="confirm-icon">${catSVG(44)}</div><div class="confirm-title">确认清空</div>
+          <div class="confirm-desc">将删除全部 <b>${materials.length}</b> 个材料<br><span style="color:var(--danger)">此操作不可恢复！</span></div>
+          <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">取消</button><button class="btn btn-danger" id="confirmClear">确认清空</button></div>
+        </div></div>`;
+      $('confirmClear').onclick = () => { materials=[]; saveData(); closeConfirm(); showToast('所有数据已清空'); renderAll(); };
+    }
+
+    function checkBackupReminder() {
+      if(materials.length>=5&&!localStorage.getItem('miaocailiao_backup_reminded_v3')){
+        localStorage.setItem('miaocailiao_backup_reminded_v3','1');
+        $('confirmContainer').innerHTML = `
+          <div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card">
+            <div class="confirm-icon">💾</div><div class="confirm-title">建议备份数据</div>
+            <div class="confirm-desc">已经添加了不少材料啦~<br>建议导出备份以防数据丢失哦！</div>
+            <div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">稍后再说</button><button class="btn btn-primary" id="backupNow">立即备份</button></div>
+          </div></div>`;
+        $('backupNow').onclick=()=>{closeConfirm();exportData();};
+      }
+    }
+
+    // ====== PWA ======
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); deferredPrompt=e;
+      $('installBtn').innerHTML=`<button class="btn-sm" onclick="installPWA()">📱 安装应用</button>`;
+      $('installBtn').style.display='block';
+    });
+    function installPWA() {
+      if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(r=>{ if(r.outcome==='accepted')showToast('安装成功！可在桌面找到喵材料'); deferredPrompt=null; $('installBtn').style.display='none'; }); }
+      else showToast('请使用浏览器菜单中的「添加到主屏幕」');
+    }
+    window.addEventListener('appinstalled',()=>{ $('installBtn').style.display='none'; showToast('喵材料已安装到桌面'); });
+
+    // ====== INIT ======
+    function init() {
+      loadData();
+      migrateData();
+      renderAll();
+      if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+      setTimeout(()=>{
+        if(materials.length>=10&&!localStorage.getItem('miaocailiao_backup_reminded_v3_large')){
+          localStorage.setItem('miaocailiao_backup_reminded_v3_large','1');
+          $('confirmContainer').innerHTML = `<div class="confirm-dialog" onclick="if(event.target===this)closeConfirm()"><div class="confirm-card"><div class="confirm-icon">💾</div><div class="confirm-title">建议备份数据</div><div class="confirm-desc">你有 <b>${materials.length}</b> 个材料<br>建议导出备份以防数据丢失</div><div class="confirm-actions"><button class="btn btn-secondary" onclick="closeConfirm()">稍后再说</button><button class="btn btn-primary" id="backupNow">立即备份</button></div></div></div>`;
+          $('backupNow').onclick=()=>{closeConfirm();exportData();};
+        }
+      },1000);
+    }
+    init();
+  </script>
+</body>
+</html>
